@@ -5,6 +5,7 @@
 
 pub mod crypto;
 pub mod error;
+pub mod format;
 
 pub use crypto::*;
-pub use error::CryptoError;
+pub use error::{CryptoError, StashError};

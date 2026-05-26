@@ -1,9 +1,16 @@
-//! Error types for cryptographic operations.
+//! Error types for cryptographic operations and stash file format.
 //!
 //! All cryptographic errors are expressed as typed `CryptoError` variants.
 //! Error messages MUST NOT leak sensitive material (keys, passwords, plaintext).
+//!
+//! `StashError` is the top-level error for stash operations, wrapping `CryptoError`
+//! and adding format, I/O, and lifecycle variants.
+
+use std::path::PathBuf;
 
 use thiserror::Error;
+
+// ─── CryptoError (Phase 1) ─────────────────────────────────────────────────
 
 /// Typed error enum for all cryptographic operations.
 ///
@@ -31,4 +38,46 @@ pub enum CryptoError {
     /// Random number generation failed (e.g., OS entropy source unavailable).
     #[error("random number generation failed: {0}")]
     RngError(String),
+}
+
+// ─── StashError (Phase 2) ──────────────────────────────────────────────────
+
+/// Top-level error for stash file operations.
+///
+/// Wraps `CryptoError` via `#[from]` so crypto calls can use `?` directly.
+/// Format, I/O, and lifecycle errors are expressed as distinct variants.
+/// Error messages never contain key bytes, passwords, or plaintext.
+#[derive(Debug, Error)]
+pub enum StashError {
+    /// A cryptographic operation failed (wraps `CryptoError`).
+    #[error("crypto error: {0}")]
+    Crypto(#[from] CryptoError),
+
+    /// The file format is invalid or corrupted.
+    #[error("invalid format: {0}")]
+    InvalidFormat(String),
+
+    /// The file format version is not supported.
+    #[error("unsupported version: {0}")]
+    UnsupportedVersion(u16),
+
+    /// An I/O error occurred.
+    #[error("io error: {0}")]
+    Io(#[from] std::io::Error),
+
+    /// Serialization or deserialization failed.
+    #[error("serialization error: {0}")]
+    Serialization(String),
+
+    /// The requested file was not found.
+    #[error("not found: {}", _0.display())]
+    NotFound(PathBuf),
+
+    /// A file already exists at the target path.
+    #[error("already exists: {}", _0.display())]
+    AlreadyExists(PathBuf),
+
+    /// The stash is locked — sensitive data has been zeroized.
+    #[error("stash is locked")]
+    Locked,
 }
