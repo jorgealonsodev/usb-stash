@@ -12,14 +12,19 @@ No installation. No internet connection. No servers. Just you and your password.
 
 ---
 
-## Quick path
+## Quick install
 
-```bash
-# 1. Copy the binary to your USB drive (Windows or Linux)
-# 2. Double-click to run
-# 3. Create your stash with a strong password (≥ 12 characters)
-# 4. Drag files in, preview, export
-```
+1. Go to [Releases](https://github.com/jorgealonsodev/usb-stash/releases) and download the binary for your OS
+2. Copy it to your USB drive
+3. Double-click to run — the app detects your OS automatically
+
+| OS | File | Instructions |
+|----|------|-------------|
+| **Windows** | `usbstash-win.exe` | Download, double-click |
+| **Linux** | `usbstash-linux` | Download, `chmod +x usbstash-linux`, `./usbstash-linux` |
+
+> First run creates a `stash.dat` vault next to the binary.  
+> Subsequent runs detect it and prompt for your password.
 
 ---
 
