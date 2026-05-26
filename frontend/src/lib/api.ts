@@ -30,3 +30,11 @@ export const extractEntry = (
   entryPath: string,
   output: string,
 ): Promise<void> => invoke<void>("extract_entry", { entryPath, output });
+
+export const deleteEntry = (entryPath: string): Promise<void> =>
+  invoke<void>("delete_entry", { entryPath });
+
+export const renameEntry = (entryPath: string, newPath: string): Promise<void> =>
+  invoke<void>("rename_entry", { entryPath, newPath });
+
+export const saveStash = (): Promise<void> => invoke<void>("save_stash");
