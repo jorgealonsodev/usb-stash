@@ -1,17 +1,18 @@
-USB Stash — Bóveda Cifrada Portable
+USB Stash — Portable Encrypted Vault
 ====================================
 
-Para abrir tu stash:
-  - Windows: doble click en usbstash-win.exe
-  - Linux:   ejecuta ./usbstash-linux (puede requerir chmod +x)
+How to open your stash:
+  - Windows: double-click usb-stash-win.exe
+  - Linux:   bash run.sh  (handles FAT32/exFAT USB drives automatically)
 
-Archivos en este USB:
-  usbstash-win.exe   → aplicación para Windows
-  usbstash-linux     → aplicación para Linux
-  stash.dat          → tu stash cifrado (NO BORRAR)
-  stash.meta         → metadata pública (NO BORRAR)
+Files on this USB:
+  usb-stash-win.exe   → Windows application
+  usb-stash-linux     → Linux binary
+  run.sh              → Linux launcher (run with: bash run.sh)
+  stash.dat           → your encrypted vault (DO NOT DELETE)
+  stash.meta          → public metadata (DO NOT DELETE)
 
-⚠ Si olvidas tu contraseña, los archivos están perdidos.
-   No existe recuperación. Esto es intencional.
+If you forget your password, your files are lost forever.
+There is no recovery. This is by design.
 
-Más información: https://usbstash.app
+More information: https://github.com/jorgealonsodev/usb-stash

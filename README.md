@@ -14,14 +14,14 @@ No installation. No internet connection. No servers. Just you and your password.
 
 ## Quick install
 
-1. Go to [Releases](https://github.com/jorgealonsodev/usb-stash/releases) and download the binary for your OS
-2. Copy it to your USB drive
-3. Double-click to run — the app detects your OS automatically
+1. Go to [Releases](https://github.com/jorgealonsodev/usb-stash/releases) and download the files for your OS
+2. Copy all downloaded files to your USB drive
+3. Run the app:
 
 | OS | File | Instructions |
 |----|------|-------------|
-| **Windows** | `usbstash-win.exe` | Download, double-click |
-| **Linux** | `usbstash-linux` | Download, `chmod +x usbstash-linux`, `./usbstash-linux` |
+| **Windows** | `usb-stash-win.exe` | Double-click |
+| **Linux** | `usb-stash-linux` + `run.sh` | `bash run.sh` (copies binary to temp if USB is FAT32/exFAT) |
 
 > First run creates a `stash.dat` vault next to the binary.  
 > Subsequent runs detect it and prompt for your password.
@@ -79,8 +79,8 @@ No installation. No internet connection. No servers. Just you and your password.
 
 | OS | Instructions |
 |----|-------------|
-| **Windows** | Double-click `usbstash-win.exe` |
-| **Linux** | `chmod +x usbstash-linux && ./usbstash-linux` |
+| **Windows** | Double-click `usb-stash-win.exe` |
+| **Linux** | `bash run.sh` (copies to temp if needed, works on FAT32/exFAT) |
 
 ### CLI (developers)
 

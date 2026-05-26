@@ -28,8 +28,9 @@ jobs:
       - name: Package
         run: |
           mkdir -p dist
-          cp target/release/usb-stash dist/usb-stash-linux
-          cd dist && sha256sum * > SHA256SUMS-linux.txt
+          cp target/release/usbstash dist/usb-stash-linux
+          cp run.sh dist/run.sh
+          cd dist && sha256sum usb-stash-linux > SHA256SUMS-linux.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -55,8 +56,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          cp target/release/usb-stash.exe dist/usb-stash-win.exe
-          cd dist && sha256sum *.exe > SHA256SUMS-windows.txt
+          cp target/release/usbstash.exe dist/usb-stash-win.exe
+          cd dist && sha256sum usb-stash-win.exe > SHA256SUMS-windows.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -83,8 +84,9 @@ jobs:
         run: |
           mkdir -p release
           cp dist/linux/usb-stash-linux release/
+          cp dist/linux/run.sh release/
           cp dist/windows/usb-stash-win.exe release/
-          cd release && sha256sum * > SHA256SUMS.txt
+          cd release && sha256sum usb-stash-linux usb-stash-win.exe > SHA256SUMS.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
