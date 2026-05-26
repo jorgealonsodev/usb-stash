@@ -53,11 +53,12 @@ jobs:
         run: cargo build --release -p usb-stash
 
       - name: Package
+        shell: bash
         run: |
-          mkdir dist
-          copy target\release\usbstash.exe dist\usbstash-win.exe
-          copy target\release\usb-stash.exe dist\usb-stash-win.exe
-          cd dist && certutil -hashfile * SHA256 > SHA256SUMS-windows.txt
+          mkdir -p dist
+          cp target/release/usbstash.exe dist/usbstash-win.exe
+          cp target/release/usb-stash.exe dist/usb-stash-win.exe
+          cd dist && sha256sum *.exe > SHA256SUMS-windows.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
