@@ -33,14 +33,25 @@ jobs:
       - name: Build CLI
         run: cargo build --release -p usbstash-cli
 
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli
+
       - name: Build Tauri GUI
-        run: cargo build --release -p usb-stash
+        run: |
+          sed -i 's/"beforeBuildCommand": "npm run build"/"beforeBuildCommand": ":"/' src-tauri/tauri.conf.json
+          sed -i 's/"active": true/"active": false/' src-tauri/tauri.conf.json
+          cargo tauri build
 
       - name: Package
         run: |
           mkdir -p dist
           cp target/release/usbstash dist/usb-stash-linux
-          cp target/release/usb-stash dist/usb-stash-gui-linux
+          # cargo tauri build may place binary in src-tauri/target/ or workspace target/
+          GUI_BIN="target/release/usb-stash"
+          if [ ! -f "$GUI_BIN" ]; then
+            GUI_BIN="src-tauri/target/release/usb-stash"
+          fi
+          cp "$GUI_BIN" dist/usb-stash-gui-linux
           cp run.sh dist/run.sh
           cd dist && sha256sum usb-stash-linux usb-stash-gui-linux > SHA256SUMS-linux.txt
 
@@ -72,15 +83,26 @@ jobs:
       - name: Build CLI
         run: cargo build --release -p usbstash-cli
 
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli
+
       - name: Build Tauri GUI
-        run: cargo build --release -p usb-stash
+        shell: bash
+        run: |
+          sed -i 's/"beforeBuildCommand": "npm run build"/"beforeBuildCommand": ":"/' src-tauri/tauri.conf.json
+          sed -i 's/"active": true/"active": false/' src-tauri/tauri.conf.json
+          cargo tauri build
 
       - name: Package
         shell: bash
         run: |
           mkdir -p dist
           cp target/release/usbstash.exe dist/usb-stash-win.exe
-          cp target/release/usb-stash.exe dist/usb-stash-gui-win.exe
+          GUI_BIN="target/release/usb-stash.exe"
+          if [ ! -f "$GUI_BIN" ]; then
+            GUI_BIN="src-tauri/target/release/usb-stash.exe"
+          fi
+          cp "$GUI_BIN" dist/usb-stash-gui-win.exe
           cd dist && sha256sum usb-stash-win.exe usb-stash-gui-win.exe > SHA256SUMS-windows.txt
 
       - name: Upload artifacts

@@ -2,7 +2,7 @@
 
 > **Your portable encrypted vault. Drop it on a USB drive, run it on any PC. Zero install.**
 
-[![Version](https://img.shields.io/badge/version-0.1.2-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.3-blue)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange)](https://rust-lang.org)
 
