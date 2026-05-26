@@ -1,8 +1,25 @@
 # File Format Specification — USB Stash
 
-This document describes the binary format used by USB Stash for its encrypted
-container (`stash.dat`) and metadata file (`stash.meta`). It is intended to be
-sufficient for implementing an independent decoder.
+> **v1.0** · 2026-05-26 · Reference implementation: `crates/usbstash-core/src/format.rs`
+
+This document specifies the binary format for USB Stash containers. It is
+sufficient to implement an independent encoder/decoder.
+
+### Quick Reference
+
+| Byte offset | Size | What |
+|-------------|------|------|
+| 0 | 4 | Magic `STSH` |
+| 4 | 2 | Version (u16 LE) |
+| 6 | 2 | Flags |
+| 8 | 16 | Salt |
+| 24 | 24 | Nonce |
+| 48 | variable | Encrypted payload (XChaCha20-Poly1305) |
+| -16 | 4 | Footer magic `STSH` |
+| -12 | 4 | Chunk count (u32 LE) |
+| -8 | 8 | Plaintext size (u64 LE) |
+
+---
 
 ## 1. Overview
 

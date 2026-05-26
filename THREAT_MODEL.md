@@ -1,5 +1,20 @@
 # Threat Model — USB Stash
 
+> **v1.0** · 2026-05-26 · [Report a vulnerability → SECURITY.md](SECURITY.md)
+
+## At a Glance
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| ¿Qué protege? | Contenido y nombres de archivos dentro del stash |
+| ¿Contra quién? | Ladrón oportunista, atacante con GPU |
+| ¿Contra quién NO? | Malware en el host, coerción física, Estado-nación |
+| ¿Algoritmo de cifrado? | XChaCha20-Poly1305 (AEAD) |
+| ¿Derivación de clave? | Argon2id (64 MB, 3 iteraciones) |
+| ¿Se puede romper? | Solo con contraseña débil o malware en el host |
+
+---
+
 ## 1. Overview
 
 USB Stash is a portable encrypted vault that lives on a USB drive. This document
