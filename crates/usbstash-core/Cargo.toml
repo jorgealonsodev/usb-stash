@@ -1,0 +1,14 @@
+[package]
+name = "usbstash-core"
+version = "0.1.0"
+edition = "2024"
+description = "Core cryptographic primitives for USB Stash"
+license = "MIT"
+
+[dependencies]
+argon2 = "0.5"
+chacha20poly1305 = { version = "0.10", features = ["rand_core"] }
+rand = "0.9"
+zeroize = { version = "1.8", features = ["zeroize_derive"] }
+subtle = "2.6"
+thiserror = "2.0"
