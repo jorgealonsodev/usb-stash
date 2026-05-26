@@ -2,7 +2,7 @@
 
 > **Your portable encrypted vault. Drop it on a USB drive, run it on any PC. Zero install.**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.2-blue)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange)](https://rust-lang.org)
 
@@ -18,10 +18,10 @@ No installation. No internet connection. No servers. Just you and your password.
 2. Copy all downloaded files to your USB drive
 3. Run the app:
 
-| OS | File | Instructions |
-|----|------|-------------|
-| **Windows** | `usb-stash-win.exe` | Double-click |
-| **Linux** | `usb-stash-linux` + `run.sh` | `bash run.sh` (copies binary to temp if USB is FAT32/exFAT) |
+| OS | Files | Instructions |
+|----|-------|-------------|
+| **Windows** | `usb-stash-gui-win.exe` + `usb-stash-win.exe` | Double-click `usb-stash-gui-win.exe` for the GUI, or use `usb-stash-win.exe` in terminal |
+| **Linux** | `usb-stash-gui-linux` + `usb-stash-linux` + `run.sh` | `bash run.sh` — launches GUI if available, falls back to CLI |
 
 > First run creates a `stash.dat` vault next to the binary.  
 > Subsequent runs detect it and prompt for your password.
@@ -79,8 +79,8 @@ No installation. No internet connection. No servers. Just you and your password.
 
 | OS | Instructions |
 |----|-------------|
-| **Windows** | Double-click `usb-stash-win.exe` |
-| **Linux** | `bash run.sh` (copies to temp if needed, works on FAT32/exFAT) |
+| **Windows** | Double-click `usb-stash-gui-win.exe` (GUI) or use `usb-stash-win.exe` in terminal (CLI) |
+| **Linux** | `bash run.sh` (auto-detects GUI/CLI, works on FAT32/exFAT) |
 
 ### CLI (developers)
 

@@ -19,18 +19,30 @@ jobs:
           sudo apt update
           sudo apt install -y libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libgtk-3-dev
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
       - name: Build CLI
         run: cargo build --release -p usbstash-cli
 
-      - name: Build Tauri
+      - name: Build Tauri GUI
         run: cargo build --release -p usb-stash
 
       - name: Package
         run: |
           mkdir -p dist
           cp target/release/usbstash dist/usb-stash-linux
+          cp target/release/usb-stash dist/usb-stash-gui-linux
           cp run.sh dist/run.sh
-          cd dist && sha256sum usb-stash-linux > SHA256SUMS-linux.txt
+          cd dist && sha256sum usb-stash-linux usb-stash-gui-linux > SHA256SUMS-linux.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -46,10 +58,21 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
       - name: Build CLI
         run: cargo build --release -p usbstash-cli
 
-      - name: Build Tauri
+      - name: Build Tauri GUI
         run: cargo build --release -p usb-stash
 
       - name: Package
@@ -57,7 +80,8 @@ jobs:
         run: |
           mkdir -p dist
           cp target/release/usbstash.exe dist/usb-stash-win.exe
-          cd dist && sha256sum usb-stash-win.exe > SHA256SUMS-windows.txt
+          cp target/release/usb-stash.exe dist/usb-stash-gui-win.exe
+          cd dist && sha256sum usb-stash-win.exe usb-stash-gui-win.exe > SHA256SUMS-windows.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -84,9 +108,12 @@ jobs:
         run: |
           mkdir -p release
           cp dist/linux/usb-stash-linux release/
+          cp dist/linux/usb-stash-gui-linux release/
           cp dist/linux/run.sh release/
           cp dist/windows/usb-stash-win.exe release/
-          cd release && sha256sum usb-stash-linux usb-stash-win.exe > SHA256SUMS.txt
+          cp dist/windows/usb-stash-gui-win.exe release/
+          cd release
+          sha256sum usb-stash-linux usb-stash-gui-linux usb-stash-win.exe usb-stash-gui-win.exe > SHA256SUMS.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
