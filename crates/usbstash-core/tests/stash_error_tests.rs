@@ -10,14 +10,20 @@ use usbstash_core::StashError;
 fn stash_error_crypto_variant_wraps_crypto_error() {
     let crypto_err = CryptoError::InvalidTag;
     let stash_err = StashError::Crypto(crypto_err);
-    assert!(matches!(stash_err, StashError::Crypto(CryptoError::InvalidTag)));
+    assert!(matches!(
+        stash_err,
+        StashError::Crypto(CryptoError::InvalidTag)
+    ));
 }
 
 #[test]
 fn stash_error_from_crypto_error_via_from_trait() {
     let crypto_err: CryptoError = CryptoError::InvalidTag;
     let stash_err: StashError = crypto_err.into();
-    assert!(matches!(stash_err, StashError::Crypto(CryptoError::InvalidTag)));
+    assert!(matches!(
+        stash_err,
+        StashError::Crypto(CryptoError::InvalidTag)
+    ));
 }
 
 #[test]

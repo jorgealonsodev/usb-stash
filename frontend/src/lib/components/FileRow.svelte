@@ -54,9 +54,13 @@
       entry,
     });
   }
+
+  function handleDblClick() {
+    dispatch("preview", entry);
+  }
 </script>
 
-<tr class="file-row" on:contextmenu={handleContextMenu}>
+<tr class="file-row" on:contextmenu={handleContextMenu} on:dblclick={handleDblClick}>
   <td class="path-cell">
     <span class="icon">{getFileIcon(entry.path)}</span>
     <span class="filename" title={entry.path}>{entry.path.split("/").pop()}</span>

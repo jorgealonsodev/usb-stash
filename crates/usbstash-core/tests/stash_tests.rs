@@ -116,7 +116,10 @@ fn stash_payload_bincode_roundtrip() {
     assert_eq!(decoded.version(), payload.version());
     assert_eq!(decoded.entries().len(), payload.entries().len());
     assert_eq!(decoded.entries()[0].path(), payload.entries()[0].path());
-    assert_eq!(decoded.entries()[0].content(), payload.entries()[0].content());
+    assert_eq!(
+        decoded.entries()[0].content(),
+        payload.entries()[0].content()
+    );
 }
 
 // ─── StashMeta (Task 2.3) ──────────────────────────────────────────────────
@@ -136,6 +139,7 @@ fn stash_meta_json_roundtrip() {
         16,
         1_700_000_000,
         0,
+        None,
         None,
     );
 
@@ -165,6 +169,7 @@ fn stash_meta_with_failed_attempts() {
         1_700_000_000,
         3,
         Some(1_700_000_100),
+        None,
     );
 
     let json = serde_json::to_string(&meta).unwrap();
@@ -189,6 +194,7 @@ fn stash_meta_contains_no_secrets() {
         16,
         1_700_000_000,
         0,
+        None,
         None,
     );
 
@@ -238,7 +244,10 @@ fn stash_create_rejects_if_already_exists() {
     // Second create at same path must fail
     let result = Stash::create(b"password2", tmp.path());
     assert!(result.is_err());
-    assert!(matches!(result.err().unwrap(), StashError::AlreadyExists(_)));
+    assert!(matches!(
+        result.err().unwrap(),
+        StashError::AlreadyExists(_)
+    ));
 }
 
 #[test]
@@ -320,8 +329,12 @@ fn stash_save_and_reopen_roundtrip() {
     let mut stash = Stash::create(b"roundtrip-pw", tmp.path()).unwrap();
 
     // Add entries
-    stash.add_entry("file1.txt".to_string(), b"hello world".to_vec()).unwrap();
-    stash.add_entry("file2.txt".to_string(), b"goodbye world".to_vec()).unwrap();
+    stash
+        .add_entry("file1.txt".to_string(), b"hello world".to_vec())
+        .unwrap();
+    stash
+        .add_entry("file2.txt".to_string(), b"goodbye world".to_vec())
+        .unwrap();
 
     // Save
     stash.save().unwrap();
@@ -358,7 +371,9 @@ fn stash_save_empty_stash_roundtrip() {
 fn stash_lock_prevents_entry_access() {
     let tmp = TempDir::new().unwrap();
     let mut stash = Stash::create(b"lock-pw", tmp.path()).unwrap();
-    stash.add_entry("secret.txt".to_string(), b"secret".to_vec()).unwrap();
+    stash
+        .add_entry("secret.txt".to_string(), b"secret".to_vec())
+        .unwrap();
 
     stash.lock();
     assert!(stash.is_locked());
@@ -371,7 +386,9 @@ fn stash_lock_prevents_entry_access() {
 fn stash_lock_prevents_save() {
     let tmp = TempDir::new().unwrap();
     let mut stash = Stash::create(b"lock-pw", tmp.path()).unwrap();
-    stash.add_entry("test.txt".to_string(), b"data".to_vec()).unwrap();
+    stash
+        .add_entry("test.txt".to_string(), b"data".to_vec())
+        .unwrap();
 
     stash.lock();
     let result = stash.save();
@@ -406,7 +423,9 @@ fn stash_add_and_get_entry() {
     let tmp = TempDir::new().unwrap();
     let mut stash = Stash::create(b"entry-pw", tmp.path()).unwrap();
 
-    let id = stash.add_entry("notes.txt".to_string(), b"my notes".to_vec()).unwrap();
+    let id = stash
+        .add_entry("notes.txt".to_string(), b"my notes".to_vec())
+        .unwrap();
     assert!(!id.to_string().is_empty());
 
     let entry = stash.get_entry("notes.txt").unwrap();
@@ -420,8 +439,12 @@ fn stash_remove_entry() {
     let tmp = TempDir::new().unwrap();
     let mut stash = Stash::create(b"remove-pw", tmp.path()).unwrap();
 
-    stash.add_entry("keep.txt".to_string(), b"keep".to_vec()).unwrap();
-    stash.add_entry("remove.txt".to_string(), b"remove".to_vec()).unwrap();
+    stash
+        .add_entry("keep.txt".to_string(), b"keep".to_vec())
+        .unwrap();
+    stash
+        .add_entry("remove.txt".to_string(), b"remove".to_vec())
+        .unwrap();
 
     let removed = stash.remove_entry("remove.txt").unwrap();
     assert!(removed);
@@ -440,9 +463,15 @@ fn stash_list_entries_returns_metadata() {
     let tmp = TempDir::new().unwrap();
     let mut stash = Stash::create(b"list-pw", tmp.path()).unwrap();
 
-    stash.add_entry("a.txt".to_string(), b"aaa".to_vec()).unwrap();
-    stash.add_entry("b.txt".to_string(), b"bbbb".to_vec()).unwrap();
-    stash.add_entry("c.txt".to_string(), b"ccccc".to_vec()).unwrap();
+    stash
+        .add_entry("a.txt".to_string(), b"aaa".to_vec())
+        .unwrap();
+    stash
+        .add_entry("b.txt".to_string(), b"bbbb".to_vec())
+        .unwrap();
+    stash
+        .add_entry("c.txt".to_string(), b"ccccc".to_vec())
+        .unwrap();
 
     let entries = stash.list_entries().unwrap();
     assert_eq!(entries.len(), 3);
@@ -459,15 +488,35 @@ fn stash_entry_mime_type_guessing() {
     let tmp = TempDir::new().unwrap();
     let mut stash = Stash::create(b"mime-pw", tmp.path()).unwrap();
 
-    stash.add_entry("doc.txt".to_string(), b"text".to_vec()).unwrap();
-    stash.add_entry("data.json".to_string(), b"{}".to_vec()).unwrap();
-    stash.add_entry("image.png".to_string(), b"\x89PNG".to_vec()).unwrap();
-    stash.add_entry("unknown".to_string(), b"??".to_vec()).unwrap();
+    stash
+        .add_entry("doc.txt".to_string(), b"text".to_vec())
+        .unwrap();
+    stash
+        .add_entry("data.json".to_string(), b"{}".to_vec())
+        .unwrap();
+    stash
+        .add_entry("image.png".to_string(), b"\x89PNG".to_vec())
+        .unwrap();
+    stash
+        .add_entry("unknown".to_string(), b"??".to_vec())
+        .unwrap();
 
-    assert_eq!(stash.get_entry("doc.txt").unwrap().mime_type(), "text/plain");
-    assert_eq!(stash.get_entry("data.json").unwrap().mime_type(), "application/json");
-    assert_eq!(stash.get_entry("image.png").unwrap().mime_type(), "image/png");
-    assert_eq!(stash.get_entry("unknown").unwrap().mime_type(), "application/octet-stream");
+    assert_eq!(
+        stash.get_entry("doc.txt").unwrap().mime_type(),
+        "text/plain"
+    );
+    assert_eq!(
+        stash.get_entry("data.json").unwrap().mime_type(),
+        "application/json"
+    );
+    assert_eq!(
+        stash.get_entry("image.png").unwrap().mime_type(),
+        "image/png"
+    );
+    assert_eq!(
+        stash.get_entry("unknown").unwrap().mime_type(),
+        "application/octet-stream"
+    );
 }
 
 // ─── Stash::Drop auto-lock (Task 2.9) ──────────────────────────────────────
@@ -476,7 +525,9 @@ fn stash_entry_mime_type_guessing() {
 fn stash_drop_auto_locks() {
     let tmp = TempDir::new().unwrap();
     let mut stash = Stash::create(b"drop-pw", tmp.path()).unwrap();
-    stash.add_entry("secret.txt".to_string(), b"secret".to_vec()).unwrap();
+    stash
+        .add_entry("secret.txt".to_string(), b"secret".to_vec())
+        .unwrap();
 
     // stash is dropped here — auto-lock happens in Drop
     drop(stash);
@@ -490,7 +541,9 @@ fn stash_drop_auto_locks() {
 fn stash_unsaved_changes_lost_on_drop() {
     let tmp = TempDir::new().unwrap();
     let mut stash = Stash::create(b"unsaved-pw", tmp.path()).unwrap();
-    stash.add_entry("unsaved.txt".to_string(), b"lost".to_vec()).unwrap();
+    stash
+        .add_entry("unsaved.txt".to_string(), b"lost".to_vec())
+        .unwrap();
 
     // Drop WITHOUT save
     drop(stash);
@@ -511,9 +564,15 @@ fn full_lifecycle_create_add_save_open_verify() {
     let mut stash = Stash::create(b"master-pw", tmp.path()).unwrap();
 
     // Add multiple entries
-    stash.add_entry("passwords.txt".to_string(), b"admin:password123".to_vec()).unwrap();
-    stash.add_entry("api_key.txt".to_string(), b"sk-1234567890".to_vec()).unwrap();
-    stash.add_entry("notes.md".to_string(), b"# Secrets\nDo not share.".to_vec()).unwrap();
+    stash
+        .add_entry("passwords.txt".to_string(), b"admin:password123".to_vec())
+        .unwrap();
+    stash
+        .add_entry("api_key.txt".to_string(), b"sk-1234567890".to_vec())
+        .unwrap();
+    stash
+        .add_entry("notes.md".to_string(), b"# Secrets\nDo not share.".to_vec())
+        .unwrap();
 
     // Save
     stash.save().unwrap();
@@ -526,9 +585,18 @@ fn full_lifecycle_create_add_save_open_verify() {
     let entries = stash2.list_entries().unwrap();
     assert_eq!(entries.len(), 3);
 
-    assert_eq!(stash2.get_entry("passwords.txt").unwrap().content(), b"admin:password123");
-    assert_eq!(stash2.get_entry("api_key.txt").unwrap().content(), b"sk-1234567890");
-    assert_eq!(stash2.get_entry("notes.md").unwrap().content(), b"# Secrets\nDo not share.");
+    assert_eq!(
+        stash2.get_entry("passwords.txt").unwrap().content(),
+        b"admin:password123"
+    );
+    assert_eq!(
+        stash2.get_entry("api_key.txt").unwrap().content(),
+        b"sk-1234567890"
+    );
+    assert_eq!(
+        stash2.get_entry("notes.md").unwrap().content(),
+        b"# Secrets\nDo not share."
+    );
 }
 
 #[test]
@@ -557,13 +625,17 @@ fn multiple_save_cycles_preserve_data() {
     let mut stash = Stash::create(b"multi-pw", tmp.path()).unwrap();
 
     // First save cycle
-    stash.add_entry("first.txt".to_string(), b"first".to_vec()).unwrap();
+    stash
+        .add_entry("first.txt".to_string(), b"first".to_vec())
+        .unwrap();
     stash.save().unwrap();
     drop(stash);
 
     // Second save cycle — add more
     let mut stash = Stash::open(b"multi-pw", tmp.path()).unwrap();
-    stash.add_entry("second.txt".to_string(), b"second".to_vec()).unwrap();
+    stash
+        .add_entry("second.txt".to_string(), b"second".to_vec())
+        .unwrap();
     stash.save().unwrap();
     drop(stash);
 
@@ -589,7 +661,9 @@ fn stash_get_entry_not_found() {
 fn stash_dat_file_has_valid_footer() {
     let tmp = TempDir::new().unwrap();
     let mut stash = Stash::create(b"footer-pw", tmp.path()).unwrap();
-    stash.add_entry("test.txt".to_string(), b"test data here".to_vec()).unwrap();
+    stash
+        .add_entry("test.txt".to_string(), b"test data here".to_vec())
+        .unwrap();
     stash.save().unwrap();
     drop(stash);
 

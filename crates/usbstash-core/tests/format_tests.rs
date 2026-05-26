@@ -78,7 +78,10 @@ fn header_rejects_unsupported_version() {
     let result = Header::read(&mut cursor);
 
     assert!(result.is_err());
-    assert!(matches!(result.unwrap_err(), StashError::UnsupportedVersion(2)));
+    assert!(matches!(
+        result.unwrap_err(),
+        StashError::UnsupportedVersion(2)
+    ));
 }
 
 #[test]

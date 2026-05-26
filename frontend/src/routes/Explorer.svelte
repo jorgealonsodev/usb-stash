@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { navigate } from "svelte-routing";
   import { open } from "@tauri-apps/plugin-dialog";
   import type { EntrySummary } from "../lib/api";
@@ -7,17 +7,22 @@
     listEntries,
     addEntry,
     lockStash,
+    readEntry,
+    getSettings,
   } from "../lib/api";
-  import { entries, expandedPaths, selectedPath, searchQuery, isDirty } from "../lib/stores";
+  import { entries, expandedPaths, selectedPath, searchQuery, isDirty, previewEntry, previewLoading, previewContent, settings } from "../lib/stores";
   import { buildTree, filterBySearch, type TreeNode } from "../lib/tree";
   import TreeView from "../lib/components/TreeView.svelte";
   import FileList from "../lib/components/FileList.svelte";
   import SearchBar from "../lib/components/SearchBar.svelte";
   import StatusBar from "../lib/components/StatusBar.svelte";
   import DropZone from "../lib/components/DropZone.svelte";
+  import PreviewOverlay from "../lib/components/PreviewOverlay.svelte";
+  import { createAutoLockTimer, type AutoLockTimer } from "../lib/components/AutoLockTimer";
 
   let loading = true;
   let stashLocked = false;
+  let autoLockTimer: AutoLockTimer | null = null;
 
   $: treeNodes = buildTree($entries);
   $: searchedTree = filterBySearch(treeNodes, $searchQuery);
@@ -62,12 +67,32 @@
     try {
       const data = await listEntries();
       entries.set(data);
+
+      // Load settings and start auto-lock timer
+      try {
+        const s = await getSettings();
+        settings.set(s);
+        if (s.auto_lock_seconds > 0) {
+          autoLockTimer = createAutoLockTimer(s.auto_lock_seconds, async () => {
+            await lockStash();
+            stashLocked = true;
+            navigate("/");
+          });
+          autoLockTimer.start();
+        }
+      } catch (e) {
+        console.error("Failed to load settings:", e);
+      }
     } catch (e) {
       console.error("Failed to load entries:", e);
       stashLocked = true;
     } finally {
       loading = false;
     }
+  });
+
+  onDestroy(() => {
+    autoLockTimer?.stop();
   });
 
   async function handleAddFile() {
@@ -127,6 +152,27 @@
       isDirty.set(true);
     });
   }
+
+  async function handlePreview(e: CustomEvent) {
+    const entry = e.detail as EntrySummary;
+    previewEntry.set(entry);
+    previewLoading.set(true);
+    try {
+      const data = await readEntry(entry.path);
+      previewContent.set(data);
+    } catch (err) {
+      console.error("Failed to read entry:", err);
+      previewContent.set(null);
+    } finally {
+      previewLoading.set(false);
+    }
+  }
+
+  function closePreview() {
+    previewEntry.set(null);
+    previewContent.set(null);
+    previewLoading.set(false);
+  }
 </script>
 
 <div class="explorer">
@@ -157,6 +203,7 @@
       <SearchBar />
       <div class="top-actions">
         <button class="btn btn-sm" on:click={handleAddFile}>+ Add file</button>
+        <button class="btn btn-sm" on:click={() => navigate("/settings")}>Settings</button>
         <button class="btn btn-sm btn-lock" on:click={handleLock}>Lock stash</button>
       </div>
     </div>
@@ -172,13 +219,21 @@
 
         <!-- File List -->
         <main class="file-list-area">
-          <FileList {filteredEntries} />
+          <FileList {filteredEntries} on:preview={handlePreview} />
         </main>
       </div>
     </DropZone>
 
     <!-- Status Bar -->
     <StatusBar />
+  {/if}
+
+  {#if $previewEntry && $previewContent !== null}
+    <PreviewOverlay
+      entry={$previewEntry}
+      content={$previewContent}
+      {closePreview}
+    />
   {/if}
 </div>
 

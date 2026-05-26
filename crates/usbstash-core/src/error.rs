@@ -80,4 +80,12 @@ pub enum StashError {
     /// The stash is locked — sensitive data has been zeroized.
     #[error("stash is locked")]
     Locked,
+
+    /// The current password provided for change_password is incorrect.
+    #[error("wrong password")]
+    WrongPassword,
+
+    /// The new password does not meet minimum strength requirements.
+    #[error("password too weak: must be at least 8 characters")]
+    PasswordTooWeak,
 }

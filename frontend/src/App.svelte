@@ -3,6 +3,7 @@
   import Login from "./routes/Login.svelte";
   import Create from "./routes/Create.svelte";
   import Explorer from "./routes/Explorer.svelte";
+  import Settings from "./routes/Settings.svelte";
   import "./app.css";
 </script>
 
@@ -15,6 +16,7 @@
     <Route path="/" component={Login} />
     <Route path="/create" component={Create} />
     <Route path="/explorer" component={Explorer} />
+    <Route path="/settings" component={Settings} />
   </main>
 </Router>
 

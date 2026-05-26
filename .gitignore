@@ -1,0 +1,11 @@
+.engram
+PRD-USB-Stash.md
+target/
+node_modules/
+dist/
+frontend/dist/
+src-tauri/gen/
+src-tauri/icons/
+.atl/
+*.lock
+pnpm-lock.yaml

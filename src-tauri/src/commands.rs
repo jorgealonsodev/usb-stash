@@ -1,8 +1,44 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::State;
-use usbstash_core::StashEntry;
+use usbstash_core::{Settings, StashEntry, StashMetadata};
 
 use crate::state::AppState;
+
+/// DTO for serializing settings to the frontend.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingsDto {
+    pub auto_lock_seconds: u32,
+}
+
+impl From<Settings> for SettingsDto {
+    fn from(s: Settings) -> Self {
+        Self {
+            auto_lock_seconds: s.auto_lock_seconds,
+        }
+    }
+}
+
+impl From<StashMetadata> for StashMetadataDto {
+    fn from(m: StashMetadata) -> Self {
+        Self {
+            version: m.version,
+            format: m.format,
+            created_at: m.created_at,
+            total_entries: m.total_entries,
+            dat_size: m.dat_size,
+        }
+    }
+}
+
+/// DTO for serializing stash metadata to the frontend.
+#[derive(Debug, Clone, Serialize)]
+pub struct StashMetadataDto {
+    pub version: u32,
+    pub format: String,
+    pub created_at: u64,
+    pub total_entries: usize,
+    pub dat_size: u64,
+}
 
 /// DTO for serializing entry metadata to the frontend.
 #[derive(Debug, Clone, Serialize)]
@@ -89,7 +125,10 @@ pub fn list_entries(state: State<'_, AppState>) -> Result<Vec<EntrySummary>, Str
         .map_err(|e| format!("state lock error: {e}"))?;
     let stash = guard.as_ref().ok_or("no stash open")?;
     let entries = stash.list_entries().map_err(|e| e.to_string())?;
-    Ok(entries.iter().map(|e| EntrySummary::from_stash_entry(e)).collect())
+    Ok(entries
+        .iter()
+        .map(|e| EntrySummary::from_stash_entry(e))
+        .collect())
 }
 
 /// Add a new entry to the currently open stash.
@@ -125,10 +164,7 @@ pub fn extract_entry(
 /// Delete an entry from the currently open stash (in-memory only).
 /// Changes persist only after `save_stash` is called.
 #[tauri::command]
-pub fn delete_entry(
-    state: State<'_, AppState>,
-    entry_path: String,
-) -> Result<(), String> {
+pub fn delete_entry(state: State<'_, AppState>, entry_path: String) -> Result<(), String> {
     let mut guard = state
         .0
         .lock()
@@ -179,6 +215,85 @@ pub fn save_stash(state: State<'_, AppState>) -> Result<(), String> {
         .map_err(|e| format!("state lock error: {e}"))?;
     let stash = guard.as_ref().ok_or("no stash open")?;
     stash.save().map_err(|e| e.to_string())
+}
+
+/// Read the raw content bytes of an entry for preview.
+#[tauri::command]
+pub fn read_entry(state: State<'_, AppState>, entry_path: String) -> Result<Vec<u8>, String> {
+    let guard = state
+        .0
+        .lock()
+        .map_err(|e| format!("state lock error: {e}"))?;
+    let stash = guard.as_ref().ok_or("no stash open")?;
+    let entry = stash.get_entry(&entry_path).map_err(|e| e.to_string())?;
+    Ok(entry.content().to_vec())
+}
+
+/// Change the stash password.
+#[tauri::command]
+pub fn change_password(
+    state: State<'_, AppState>,
+    old_password: String,
+    new_password: String,
+) -> Result<(), String> {
+    let mut guard = state
+        .0
+        .lock()
+        .map_err(|e| format!("state lock error: {e}"))?;
+    let stash = guard.as_mut().ok_or("no stash open")?;
+    stash
+        .change_password(old_password.as_bytes(), new_password.as_bytes())
+        .map_err(|e| e.to_string())
+}
+
+/// Get the current stash settings.
+#[tauri::command]
+pub fn get_settings(state: State<'_, AppState>) -> Result<SettingsDto, String> {
+    let guard = state
+        .0
+        .lock()
+        .map_err(|e| format!("state lock error: {e}"))?;
+    let stash = guard.as_ref().ok_or("no stash open")?;
+    Ok(stash.settings().into())
+}
+
+/// Update the stash settings.
+#[tauri::command]
+pub fn update_settings(state: State<'_, AppState>, settings: SettingsDto) -> Result<(), String> {
+    let mut guard = state
+        .0
+        .lock()
+        .map_err(|e| format!("state lock error: {e}"))?;
+    let stash = guard.as_mut().ok_or("no stash open")?;
+    stash
+        .update_settings(Settings {
+            auto_lock_seconds: settings.auto_lock_seconds,
+        })
+        .map_err(|e| e.to_string())
+}
+
+/// Get stash metadata (version, created_at, size, etc.).
+#[tauri::command]
+pub fn get_stash_metadata(state: State<'_, AppState>) -> Result<StashMetadataDto, String> {
+    let guard = state
+        .0
+        .lock()
+        .map_err(|e| format!("state lock error: {e}"))?;
+    let stash = guard.as_ref().ok_or("no stash open")?;
+    Ok(stash.metadata().into())
+}
+
+/// Export the stash to a target directory.
+#[tauri::command]
+pub fn export_stash(state: State<'_, AppState>, target_path: String) -> Result<(), String> {
+    let guard = state
+        .0
+        .lock()
+        .map_err(|e| format!("state lock error: {e}"))?;
+    let stash = guard.as_ref().ok_or("no stash open")?;
+    stash
+        .export_to(std::path::Path::new(&target_path))
+        .map_err(|e| e.to_string())
 }
 
 // ─── Tests ─────────────────────────────────────────────────────────────────
@@ -335,6 +450,44 @@ mod tests {
         stash.lock();
 
         let result = stash.remove_entry("/docs/notes.txt");
+        assert!(result.is_err());
+    }
+
+    // ─── read_entry ────────────────────────────────────────────────────
+
+    #[test]
+    fn read_entry_returns_content_for_valid_path() {
+        let (stash, _tmp) = make_test_stash();
+        let result: Result<Vec<u8>, String> = stash
+            .get_entry("/docs/notes.txt")
+            .map(|e| e.content().to_vec())
+            .map_err(|e| e.to_string());
+
+        assert_eq!(result.unwrap(), b"some notes".to_vec());
+    }
+
+    #[test]
+    fn read_entry_errors_for_invalid_path() {
+        let (stash, _tmp) = make_test_stash();
+
+        let result: Result<Vec<u8>, String> = stash
+            .get_entry("/nonexistent.txt")
+            .map(|e| e.content().to_vec())
+            .map_err(|e| e.to_string());
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn read_entry_on_locked_stash_errors() {
+        let (mut stash, _tmp) = make_test_stash();
+        stash.lock();
+
+        let result: Result<Vec<u8>, String> = stash
+            .get_entry("/docs/notes.txt")
+            .map(|e| e.content().to_vec())
+            .map_err(|e| e.to_string());
+
         assert!(result.is_err());
     }
 

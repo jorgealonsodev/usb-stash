@@ -100,7 +100,9 @@ impl Header {
             }
         })?;
 
-        let magic: [u8; 4] = buf[0..4].try_into().unwrap();
+        let magic: [u8; 4] = buf[0..4].try_into().map_err(|_| {
+            StashError::InvalidFormat("header magic slice incorrect length".to_string())
+        })?;
         if magic != Self::MAGIC {
             return Err(StashError::InvalidFormat(format!(
                 "invalid magic: expected STSH, got {:?}",
@@ -114,8 +116,12 @@ impl Header {
         }
 
         let flags = u16::from_le_bytes([buf[6], buf[7]]);
-        let salt: [u8; 16] = buf[8..24].try_into().unwrap();
-        let nonce: [u8; 24] = buf[24..48].try_into().unwrap();
+        let salt: [u8; 16] = buf[8..24].try_into().map_err(|_| {
+            StashError::InvalidFormat("header salt slice incorrect length".to_string())
+        })?;
+        let nonce: [u8; 24] = buf[24..48].try_into().map_err(|_| {
+            StashError::InvalidFormat("header nonce slice incorrect length".to_string())
+        })?;
 
         Ok(Self {
             magic,
@@ -215,7 +221,9 @@ impl Footer {
             }
         })?;
 
-        let magic: [u8; 4] = buf[0..4].try_into().unwrap();
+        let magic: [u8; 4] = buf[0..4].try_into().map_err(|_| {
+            StashError::InvalidFormat("footer magic slice incorrect length".to_string())
+        })?;
         if magic != Self::MAGIC {
             return Err(StashError::InvalidFormat(format!(
                 "invalid footer magic: expected STSH, got {:?}",

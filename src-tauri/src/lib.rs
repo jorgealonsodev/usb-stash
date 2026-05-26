@@ -20,6 +20,12 @@ pub fn run() {
             commands::delete_entry,
             commands::rename_entry,
             commands::save_stash,
+            commands::read_entry,
+            commands::change_password,
+            commands::get_settings,
+            commands::update_settings,
+            commands::get_stash_metadata,
+            commands::export_stash,
         ])
         .run(tauri::generate_context!())
         .expect("error while running USB Stash");

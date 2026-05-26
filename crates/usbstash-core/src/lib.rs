@@ -11,4 +11,4 @@ pub mod stash;
 
 pub use crypto::*;
 pub use error::{CryptoError, StashError};
-pub use stash::{Stash, StashEntry, StashMeta, StashPayload};
+pub use stash::{Settings, Stash, StashEntry, StashMeta, StashMetadata, StashPayload};

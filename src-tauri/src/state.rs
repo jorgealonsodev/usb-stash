@@ -15,8 +15,12 @@ impl AppState {
     }
 
     /// Check if the stash is currently locked (None or inner Stash is locked).
+    #[allow(dead_code)]
     pub fn is_locked(&self) -> bool {
-        let guard = self.0.lock().expect("AppState mutex poisoned");
+        let guard = match self.0.lock() {
+            Ok(g) => g,
+            Err(poisoned) => poisoned.into_inner(),
+        };
         match guard.as_ref() {
             None => true,
             Some(stash) => stash.is_locked(),

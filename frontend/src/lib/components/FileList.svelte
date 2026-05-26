@@ -78,6 +78,7 @@
           <FileRow
             {entry}
             on:contextmenu_action={handleContextMenu}
+            on:preview
           />
         {/each}
       </tbody>
