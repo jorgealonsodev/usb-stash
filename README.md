@@ -1,66 +1,66 @@
 # USB Stash
 
-> **Tu bóveda cifrada portable. Metela en un USB, ejecutala en cualquier PC. Cero instalación.**
+> **Your portable encrypted vault. Drop it on a USB drive, run it on any PC. Zero install.**
 
 [![Version](https://img.shields.io/badge/version-0.1.0-blue)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange)](https://rust-lang.org)
 
-USB Stash cifra tus archivos con **XChaCha20-Poly1305** y los guarda en un único
-contenedor portable. Lo llevás en un USB. Lo abrís con doble click. Sin instalar
-nada. Sin conexión a internet. Sin servidores. Solo vos y tu contraseña.
+USB Stash encrypts your files with **XChaCha20-Poly1305** and stores them in a
+single portable container. Carry it on a USB drive. Open it with a double-click.
+No installation. No internet connection. No servers. Just you and your password.
 
 ---
 
 ## Quick path
 
 ```bash
-# 1. Copiá el binario a tu USB (Windows o Linux)
-# 2. Ejecutalo con doble click
-# 3. Creá tu stash con una contraseña fuerte (≥ 12 caracteres)
-# 4. Arrastrá archivos, previsualizá, exportá
+# 1. Copy the binary to your USB drive (Windows or Linux)
+# 2. Double-click to run
+# 3. Create your stash with a strong password (≥ 12 characters)
+# 4. Drag files in, preview, export
 ```
 
 ---
 
-## ¿Qué hace?
+## What it does
 
-| Hace | No hace |
+| Does | Doesn't |
 |------|---------|
-| Cifra archivos con XChaCha20-Poly1305 (AEAD) | No se conecta a internet |
-| Protege la contraseña con Argon2id (64 MB) | No crea archivos temporales |
-| Detecta cualquier modificación del archivo | No requiere instalación |
-| Funciona en Windows 10+ y Linux | No tiene servidores ni cuentas |
-| Zeroiza claves y datos al cerrar | No recupera contraseñas perdidas |
+| Encrypts files with XChaCha20-Poly1305 (AEAD) | No internet connection |
+| Protects passwords with Argon2id (64 MB) | No temp files |
+| Detects any file tampering | No installation required |
+| Works on Windows 10+ and Linux | No servers or accounts |
+| Zeroizes keys and data on close | No password recovery |
 
 ---
 
 ## Stack
 
-| Capa | Tecnología | Por qué |
-|------|------------|---------|
-| Cripto | `argon2` + `chacha20poly1305` | Moderno, auditado, sin AES-NI requerido |
-| Backend | Rust + Tauri 2 | Binarios chicos, memory safety, cross-platform |
-| Frontend | Svelte 4 + TypeScript | Bundle mínimo, reactividad nativa |
-| Build | Cargo workspace + Vite | Monorepo, un solo `cargo build` |
+| Layer | Technology | Why |
+|------|------------|-----|
+| Crypto | `argon2` + `chacha20poly1305` | Modern, audited, no AES-NI required |
+| Backend | Rust + Tauri 2 | Small binaries, memory safety, cross-platform |
+| Frontend | Svelte 4 + TypeScript | Minimal bundle, native reactivity |
+| Build | Cargo workspace + Vite | Monorepo, single `cargo build` |
 
 ```
 ┌──────────────────────────────────────────┐
 │              USB DRIVE                   │
 │  usbstash-win.exe / usbstash-linux       │
-│  stash.dat  (bóveda cifrada)             │
-│  stash.meta (parámetros públicos)        │
+│  stash.dat  (encrypted vault)            │
+│  stash.meta (public parameters)          │
 └──────────────┬───────────────────────────┘
                ▼
 ┌──────────────────────────────────────────┐
 │         TAURI APP (USB Stash)            │
-│  ┌─ Frontend Svelte ──────────────────┐  │
+│  ┌─ Svelte Frontend ──────────────────┐  │
 │  │  Login · Create · Explorer · Preview│  │
 │  │  Settings · Auto-lock · Export     │  │
 │  └──────────┬──────────────────────────┘  │
 │             │ Tauri IPC                   │
 │  ┌──────────▼──────────────────────────┐  │
-│  │  Backend Rust (usbstash-core)       │  │
+│  │  Rust Backend (usbstash-core)       │  │
 │  │  Argon2id · AEAD · Format · Stash   │  │
 │  └─────────────────────────────────────┘  │
 └──────────────────────────────────────────┘
@@ -68,96 +68,96 @@ nada. Sin conexión a internet. Sin servidores. Solo vos y tu contraseña.
 
 ---
 
-## Uso
+## Usage
 
-### Usuario final
+### End user
 
-| SO | Instrucción |
+| OS | Instructions |
 |----|-------------|
-| **Windows** | Doble click en `usbstash-win.exe` |
+| **Windows** | Double-click `usbstash-win.exe` |
 | **Linux** | `chmod +x usbstash-linux && ./usbstash-linux` |
 
-### CLI (desarrolladores)
+### CLI (developers)
 
 ```bash
-usbstash create /ruta/stash          # Crear bóveda nueva
-usbstash add /ruta/stash doc.pdf     # Agregar archivo
-usbstash list /ruta/stash            # Listar contenido
-usbstash extract /ruta/stash doc.pdf # Extraer archivo
+usbstash create /path/to/stash          # Create new vault
+usbstash add /path/to/stash doc.pdf     # Add a file
+usbstash list /path/to/stash            # List contents
+usbstash extract /path/to/stash doc.pdf # Extract a file
 ```
 
 ---
 
-## Desarrollo
+## Development
 
-### Prerrequisitos
+### Prerequisites
 
-| Dependencia | Versión | Instalación |
-|-------------|---------|-------------|
+| Dependency | Version | Install |
+|------------|---------|---------|
 | Rust | 1.75+ | `rustup install stable` |
 | Node.js | 18+ | [nodejs.org](https://nodejs.org) |
 | pnpm | — | `npm install -g pnpm` |
 | webkit2gtk (Linux) | 4.1-dev | `sudo apt install libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev` |
-| WebView2 (Windows) | — | Incluido en Win 10+ |
+| WebView2 (Windows) | — | Included in Win 10+ |
 
-### Comandos
+### Commands
 
 ```bash
-cargo build                    # Backend
-cd frontend && pnpm install && pnpm build  # Frontend
-cargo tauri build              # App completa
-./scripts/build-portable.sh    # Distribución USB (Linux)
+cargo build                                # Backend
+cd frontend && pnpm install && pnpm build   # Frontend
+cargo tauri build                          # Full app
+./scripts/build-portable.sh                # USB distribution (Linux)
 ```
 
-### Tests y calidad
+### Tests & Quality
 
 ```bash
-cargo test --all                         # 155 tests Rust
-cd frontend && pnpm test                 # 41 tests Svelte
+cargo test --all                         # 155 Rust tests
+cd frontend && pnpm test                 # 41 Svelte tests
 cargo clippy --all -- -D warnings        # Lint
-cargo fmt --check                        # Formato
+cargo fmt --check                        # Format
 ```
 
 ---
 
-## Rendimiento
+## Performance
 
-| Operación | Tiempo | Hardware |
-|-----------|--------|----------|
-| Derivar clave (Argon2id) | ~600ms | Ryzen 5 5600X |
-| Abrir stash de 1 MB | ~650ms | 32 GB RAM |
-| Abrir stash de 100 MB | ~800ms | NVMe SSD |
-| Cifrar 100 MB | ~180ms | — |
+| Operation | Time | Hardware |
+|-----------|------|----------|
+| Key derivation (Argon2id) | ~600ms | Ryzen 5 5600X |
+| Open 1 MB stash | ~650ms | 32 GB RAM |
+| Open 100 MB stash | ~800ms | NVMe SSD |
+| Encrypt 100 MB | ~180ms | — |
 
-*Benchmarks con [Criterion](https://github.com/bheisler/criterion.rs).*
-
----
-
-## Documentación
-
-| Documento | ¿Para quién? |
-|-----------|---------------|
-| [FILE_FORMAT.md](FILE_FORMAT.md) | Desarrolladores que quieran implementar un decodificador independiente |
-| [THREAT_MODEL.md](THREAT_MODEL.md) | Auditores de seguridad, pentesters |
-| [SECURITY.md](SECURITY.md) | Quien encuentre una vulnerabilidad |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Quien quiera contribuir código |
-| [CHANGELOG.md](CHANGELOG.md) | Historial de versiones |
+*Benchmarked with [Criterion](https://github.com/bheisler/criterion.rs).*
 
 ---
 
-## Decisiones de diseño
+## Documentation
 
-| Decisión | Por qué |
-|----------|---------|
-| XChaCha20 sobre AES-GCM | Nonces de 24 bytes (sin riesgo de colisión), sin requerir AES-NI |
-| Argon2id con 64 MB | OWASP 2024: equilibrio entre seguridad y usabilidad interactiva |
-| Contenedor único (`stash.dat`) | No se exponen nombres de archivo individuales |
-| Cero conexiones de red | Defensa en profundidad: la app no puede leakear datos |
-| Svelte sobre React | Bundle más chico, menos abstracciones |
-| Bincode sobre JSON | Binario, compacto, determinístico |
+| Document | For |
+|----------|-----|
+| [FILE_FORMAT.md](FILE_FORMAT.md) | Developers implementing an independent decoder |
+| [THREAT_MODEL.md](THREAT_MODEL.md) | Security auditors, pentesters |
+| [SECURITY.md](SECURITY.md) | Finding a vulnerability |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contributing code |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
 
 ---
 
-## Licencia
+## Design decisions
+
+| Decision | Why |
+|----------|-----|
+| XChaCha20 over AES-GCM | 24-byte nonces (no collision risk), no AES-NI required |
+| Argon2id with 64 MB | OWASP 2024: balance of security and interactive usability |
+| Single container (`stash.dat`) | Individual filenames never exposed |
+| Zero network connections | Defense in depth: the app cannot leak data |
+| Svelte over React | Smaller bundle, fewer abstractions |
+| Bincode over JSON | Binary, compact, deterministic |
+
+---
+
+## License
 
 Apache 2.0 — [LICENSE](LICENSE)
