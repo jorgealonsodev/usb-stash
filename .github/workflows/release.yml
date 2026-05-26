@@ -28,7 +28,6 @@ jobs:
       - name: Package
         run: |
           mkdir -p dist
-          cp target/release/usbstash dist/usbstash-linux
           cp target/release/usb-stash dist/usb-stash-linux
           cd dist && sha256sum * > SHA256SUMS-linux.txt
 
@@ -56,7 +55,6 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          cp target/release/usbstash.exe dist/usbstash-win.exe
           cp target/release/usb-stash.exe dist/usb-stash-win.exe
           cd dist && sha256sum *.exe > SHA256SUMS-windows.txt
 
@@ -84,8 +82,9 @@ jobs:
       - name: Merge artifacts
         run: |
           mkdir -p release
-          cp dist/linux/* release/
-          cp dist/windows/* release/
+          cp dist/linux/usb-stash-linux release/
+          cp dist/windows/usb-stash-win.exe release/
+          cd release && sha256sum * > SHA256SUMS.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
