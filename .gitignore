@@ -2,4 +2,4 @@
 PRD-USB-Stash.md
 target/
 .atl/
-*.lock
+*.lockdist/release/
