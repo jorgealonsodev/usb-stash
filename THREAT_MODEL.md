@@ -85,7 +85,7 @@ design against, and the cryptographic guarantees provided.
 | **stash.dat file** | Tampering, truncation, replacement | AEAD tag verification fails on any modification |
 | **stash.meta file** | Tampering of KDF parameters | If parameters are changed, key derivation produces wrong key → decryption fails |
 | **CLI arguments** | Password exposed in process list | Password read from stdin/prompt, not CLI args |
-| **Tauri IPC** | Malicious frontend commands | Commands are typed and validated; no arbitrary code execution |
+| **GUI input fields** | Keylogging, shoulder surfing | App provides no mitigation; user must ensure trusted environment |
 | **File system (host)** | Host reads/modifies stash files while app is closed | Encryption protects at rest; app detects tampering on open |
 
 ### 6.2 Data Flow

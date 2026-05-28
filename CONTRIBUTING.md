@@ -56,15 +56,13 @@ disclosure procedures.
 ### Prerequisites
 
 - Rust 1.75+ (`rustup install stable`)
-- Node.js 18+ (for frontend)
-- pnpm (`npm install -g pnpm`)
-- Tauri dependencies (see [Tauri docs](https://v2.tauri.app/start/prerequisites/))
+- libgtk-3-dev (Linux): `sudo apt install libgtk-3-dev`
 
 ### Build and Test
 
 ```bash
-# Install dependencies
-cargo build --all
+# Build all crates
+cargo build --workspace
 
 # Run all tests
 cargo test --all
@@ -75,8 +73,11 @@ cargo fmt
 # Lint
 cargo clippy --all -- -D warnings
 
-# Build Tauri app (development)
-cd src-tauri && cargo tauri dev
+# Build GUI only
+cargo build -p usbstash-gui
+
+# Build CLI only
+cargo build -p usbstash-cli
 ```
 
 ### Project Structure
@@ -85,9 +86,8 @@ cd src-tauri && cargo tauri dev
 usbstash/
 ├── crates/
 │   ├── usbstash-core/    # Pure Rust library (crypto, format, stash API)
-│   └── usbstash-cli/     # CLI binary
-├── src-tauri/            # Tauri desktop app backend
-├── frontend/             # Svelte frontend
+│   ├── usbstash-cli/     # CLI binary
+│   └── usbstash-gui/     # egui desktop application
 └── scripts/              # Build and distribution scripts
 ```
 

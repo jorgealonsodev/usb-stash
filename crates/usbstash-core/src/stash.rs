@@ -611,6 +611,41 @@ impl Stash {
         Ok(payload.entries().len() < initial_len)
     }
 
+    /// Rename an entry from old_path to new_path (in-memory only).
+    ///
+    /// Removes the entry at old_path and re-adds it with new_path, preserving
+    /// the same content, id, and created_at. Updates modified_at to now.
+    /// Changes are not persisted until `save()` is called.
+    /// Returns `StashError::Locked` if the stash is locked.
+    /// Returns `StashError::NotFound` if no entry exists with the old path.
+    pub fn rename_entry(&mut self, old_path: &str, new_path: &str) -> Result<(), StashError> {
+        let payload = self.payload.as_mut().ok_or(StashError::Locked)?;
+
+        // Find and remove the entry at old_path
+        let entry_idx = payload
+            .entries()
+            .iter()
+            .position(|e| e.path() == old_path)
+            .ok_or_else(|| StashError::NotFound(PathBuf::from(old_path)))?;
+
+        let old_entry = payload.entries_mut().remove(entry_idx);
+
+        // Re-add with new path, preserving id and created_at
+        let now = current_epoch_secs();
+        let new_entry = StashEntry::new(
+            old_entry.id,
+            new_path.to_string(),
+            old_entry.created_at,
+            now,
+            old_entry.size,
+            guess_mime_type(new_path),
+            old_entry.content,
+        );
+
+        payload.entries_mut().push(new_entry);
+        Ok(())
+    }
+
     /// List all entries (metadata only, not decrypted content).
     ///
     /// Returns `StashError::Locked` if the stash is locked.
@@ -1068,5 +1103,97 @@ mod tests {
         // Open the exported copy
         let exported = Stash::open(b"test-password", export_dir.path()).unwrap();
         assert_eq!(exported.metadata().version, 1);
+    }
+
+    // ─── Stash::rename_entry ───────────────────────────────────────────
+
+    #[test]
+    fn rename_entry_changes_path_preserves_content() {
+        let (mut stash, _tmp) = make_test_stash();
+        stash
+            .add_entry("/old_name.txt".to_string(), b"secret data".to_vec())
+            .unwrap();
+
+        stash
+            .rename_entry("/old_name.txt", "/new_name.txt")
+            .unwrap();
+
+        // Old path should not exist
+        assert!(stash.get_entry("/old_name.txt").is_err());
+
+        // New path should exist with same content
+        let entry = stash.get_entry("/new_name.txt").unwrap();
+        assert_eq!(entry.content(), b"secret data");
+        assert_eq!(entry.path(), "/new_name.txt");
+    }
+
+    #[test]
+    fn rename_entry_preserves_id_and_created_at() {
+        let (mut stash, _tmp) = make_test_stash();
+        stash
+            .add_entry("/file.txt".to_string(), b"data".to_vec())
+            .unwrap();
+
+        let old_entry = stash.get_entry("/file.txt").unwrap();
+        let old_id = old_entry.id();
+        let old_created_at = old_entry.created_at();
+
+        std::thread::sleep(std::time::Duration::from_secs(1));
+
+        stash.rename_entry("/file.txt", "/renamed.txt").unwrap();
+
+        let new_entry = stash.get_entry("/renamed.txt").unwrap();
+        assert_eq!(new_entry.id(), old_id);
+        assert_eq!(new_entry.created_at(), old_created_at);
+        // modified_at should be updated
+        assert!(new_entry.modified_at() > old_created_at);
+    }
+
+    #[test]
+    fn rename_entry_fails_when_locked() {
+        let (mut stash, _tmp) = make_test_stash();
+        stash.lock();
+
+        let result = stash.rename_entry("/a", "/b");
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), StashError::Locked));
+    }
+
+    #[test]
+    fn rename_entry_fails_when_old_path_not_found() {
+        let (mut stash, _tmp) = make_test_stash();
+
+        let result = stash.rename_entry("/nonexistent", "/new");
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), StashError::NotFound(_)));
+    }
+
+    #[test]
+    fn rename_entry_updates_mime_type() {
+        let (mut stash, _tmp) = make_test_stash();
+        stash
+            .add_entry("/image.png".to_string(), b"png data".to_vec())
+            .unwrap();
+
+        stash.rename_entry("/image.png", "/document.pdf").unwrap();
+
+        let entry = stash.get_entry("/document.pdf").unwrap();
+        assert_eq!(entry.mime_type(), "application/pdf");
+    }
+
+    #[test]
+    fn rename_entry_total_count_unchanged() {
+        let (mut stash, _tmp) = make_test_stash();
+        stash
+            .add_entry("/a.txt".to_string(), b"a".to_vec())
+            .unwrap();
+        stash
+            .add_entry("/b.txt".to_string(), b"b".to_vec())
+            .unwrap();
+
+        stash.rename_entry("/a.txt", "/c.txt").unwrap();
+
+        let entries = stash.list_entries().unwrap();
+        assert_eq!(entries.len(), 2);
     }
 }

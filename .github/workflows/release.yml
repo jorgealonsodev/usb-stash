@@ -17,34 +17,19 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt update
-          sudo apt install -y libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libgtk-3-dev
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm ci
-          npm run build
+          sudo apt install -y libgtk-3-dev
 
       - name: Build CLI
         run: cargo build --release -p usbstash-cli
 
-      - name: Build Tauri GUI
-        run: |
-          sed -i 's/"beforeBuildCommand": "npm run build"/"beforeBuildCommand": ":"/' src-tauri/tauri.conf.json
-          sed -i 's/"active": true/"active": false/' src-tauri/tauri.conf.json
-          npx tauri build
+      - name: Build GUI
+        run: cargo build --release -p usbstash-gui
 
       - name: Package
         run: |
           mkdir -p dist
           cp target/release/usbstash dist/usb-stash-linux
-          GUI_BIN=$(find . -path "*/release/usb-stash" -not -path "*/build/*" -not -name "*.d" | head -1)
-          cp "$GUI_BIN" dist/usb-stash-gui-linux
+          cp target/release/usbstash-gui dist/usb-stash-gui-linux
           cp run.sh dist/run.sh
           cd dist && sha256sum usb-stash-linux usb-stash-gui-linux > SHA256SUMS-linux.txt
 
@@ -62,34 +47,18 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm ci
-          npm run build
-
       - name: Build CLI
         run: cargo build --release -p usbstash-cli
 
-      - name: Build Tauri GUI
-        shell: bash
-        run: |
-          sed -i 's/"beforeBuildCommand": "npm run build"/"beforeBuildCommand": ":"/' src-tauri/tauri.conf.json
-          sed -i 's/"active": true/"active": false/' src-tauri/tauri.conf.json
-          npx tauri build
+      - name: Build GUI
+        run: cargo build --release -p usbstash-gui
 
       - name: Package
         shell: bash
         run: |
           mkdir -p dist
           cp target/release/usbstash.exe dist/usb-stash-win.exe
-          GUI_BIN=$(find . -path "*/release/usb-stash.exe" -not -path "*/build/*" | head -1)
-          cp "$GUI_BIN" dist/usb-stash-gui-win.exe
+          cp target/release/usbstash-gui.exe dist/usb-stash-gui-win.exe
           cd dist && sha256sum usb-stash-win.exe usb-stash-gui-win.exe > SHA256SUMS-windows.txt
 
       - name: Upload artifacts

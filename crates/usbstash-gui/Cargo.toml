@@ -1,0 +1,22 @@
+[package]
+name = "usbstash-gui"
+version = "0.2.0"
+edition = "2024"
+description = "USB Stash — egui desktop GUI"
+license = "MIT"
+
+[[bin]]
+name = "usbstash-gui"
+path = "src/main.rs"
+
+[dependencies]
+eframe = "0.34"
+egui = "0.34"
+egui_extras = "0.34"
+rfd = "0.15"
+zxcvbn = "3"
+usbstash-core = { path = "../usbstash-core" }
+
+[dev-dependencies]
+tempfile = "3"
+uuid = { version = "1", features = ["v4"] }

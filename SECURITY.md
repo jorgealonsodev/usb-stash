@@ -49,8 +49,7 @@ This security policy covers:
 
 - `usbstash-core` — cryptographic operations, file format, stash lifecycle
 - `usbstash-cli` — command-line interface
-- `src-tauri` — Tauri desktop application backend
-- `frontend` — Svelte frontend (XSS, injection, etc.)
+- `usbstash-gui` — egui desktop application
 
 ## Out of Scope
 
