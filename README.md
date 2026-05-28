@@ -10,6 +10,8 @@ USB Stash encrypts your files with **XChaCha20-Poly1305** and stores them in a
 single portable container. Carry it on a USB drive. Open it with a double-click.
 No installation. No internet connection. No servers. Just you and your password.
 
+![USB Stash screenshot](usb-stash.png)
+
 ---
 
 ## Quick install
@@ -45,27 +47,27 @@ No installation. No internet connection. No servers. Just you and your password.
 | Layer | Technology | Why |
 |------|------------|-----|
 | Crypto | `argon2` + `chacha20poly1305` | Modern, audited, no AES-NI required |
-| Backend | Rust + Tauri 2 | Small binaries, memory safety, cross-platform |
-| Frontend | Svelte 4 + TypeScript | Minimal bundle, native reactivity |
-| Build | Cargo workspace + Vite | Monorepo, single `cargo build` |
+| GUI | egui + eframe | Single native binary, no web runtime, immediate-mode rendering |
+| CLI | Rust (clap) | Fast, portable, scriptable |
+| Build | Cargo workspace | Monorepo, single `cargo build` |
 
 ```
 ┌──────────────────────────────────────────┐
 │              USB DRIVE                   │
 │  usbstash-win.exe / usbstash-linux       │
+│  usbstash-gui-win.exe / usbstash-gui-linux│
 │  stash.dat  (encrypted vault)            │
 │  stash.meta (public parameters)          │
 └──────────────┬───────────────────────────┘
                ▼
 ┌──────────────────────────────────────────┐
-│         TAURI APP (USB Stash)            │
-│  ┌─ Svelte Frontend ──────────────────┐  │
-│  │  Login · Create · Explorer · Preview│  │
+│         egui GUI (usbstash-gui)          │
+│  ┌─ Login · Create · Explorer ────────┐  │
 │  │  Settings · Auto-lock · Export     │  │
 │  └──────────┬──────────────────────────┘  │
-│             │ Tauri IPC                   │
+│             │ direct calls                │
 │  ┌──────────▼──────────────────────────┐  │
-│  │  Rust Backend (usbstash-core)       │  │
+│  │  Rust Core (usbstash-core)          │  │
 │  │  Argon2id · AEAD · Format · Stash   │  │
 │  └─────────────────────────────────────┘  │
 └──────────────────────────────────────────┘
@@ -100,25 +102,20 @@ usbstash extract /path/to/stash doc.pdf # Extract a file
 | Dependency | Version | Install |
 |------------|---------|---------|
 | Rust | 1.75+ | `rustup install stable` |
-| Node.js | 18+ | [nodejs.org](https://nodejs.org) |
-| pnpm | — | `npm install -g pnpm` |
-| webkit2gtk (Linux) | 4.1-dev | `sudo apt install libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev` |
-| WebView2 (Windows) | — | Included in Win 10+ |
+| libgtk-3 (Linux) | — | `sudo apt install libgtk-3-dev` |
 
 ### Commands
 
 ```bash
-cargo build                                # Backend
-cd frontend && pnpm install && pnpm build   # Frontend
-cargo tauri build                          # Full app
-./scripts/build-portable.sh                # USB distribution (Linux)
+cargo build --workspace                  # Build all crates
+cargo build -p usbstash-gui              # Build GUI only
+cargo build -p usbstash-cli              # Build CLI only
 ```
 
 ### Tests & Quality
 
 ```bash
-cargo test --all                         # 155 Rust tests
-cd frontend && pnpm test                 # 41 Svelte tests
+cargo test --all                         # All Rust tests
 cargo clippy --all -- -D warnings        # Lint
 cargo fmt --check                        # Format
 ```
@@ -158,7 +155,7 @@ cargo fmt --check                        # Format
 | Argon2id with 64 MB | OWASP 2024: balance of security and interactive usability |
 | Single container (`stash.dat`) | Individual filenames never exposed |
 | Zero network connections | Defense in depth: the app cannot leak data |
-| Svelte over React | Smaller bundle, fewer abstractions |
+| egui over Tauri/Svelte | Single binary, no web runtime, no Node.js dependency |
 | Bincode over JSON | Binary, compact, deterministic |
 
 ---
