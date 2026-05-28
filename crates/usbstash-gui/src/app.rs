@@ -102,12 +102,21 @@ impl App {
     }
 
     /// Lock the stash and return to the login screen.
+    /// Saves pending changes before locking to prevent data loss.
     pub fn lock_stash(&mut self) {
         let mut guard = match self.stash.lock() {
             Ok(g) => g,
             Err(poisoned) => poisoned.into_inner(),
         };
         if let Some(stash) = guard.as_mut() {
+            // Save before locking if there are unsaved changes
+            if self.is_dirty {
+                if let Err(e) = stash.save() {
+                    self.status_message = Some(format!("Save failed: {}", e));
+                    return;
+                }
+                self.is_dirty = false;
+            }
             stash.lock();
         }
         *guard = None;
@@ -195,6 +204,41 @@ mod tests {
         // last_interaction is Instant::now() from default — should not trigger
         app.check_auto_lock();
         assert_eq!(app.screen, Screen::Explorer);
+    }
+
+    #[test]
+    fn test_lock_stash_saves_before_locking() {
+        let tmp = TempDir::new().unwrap();
+        let path = tmp.path().to_path_buf();
+
+        let stash = Stash::create(b"testpassword123", &path).unwrap();
+        stash.save().unwrap();
+
+        let mut app = App::default();
+        {
+            let mut guard = app.stash.lock().unwrap();
+            *guard = Some(stash);
+        }
+        app.screen = Screen::Explorer;
+        app.is_dirty = true;
+
+        // Add an entry to the stash so there's something to save
+        {
+            let mut guard = app.stash.lock().unwrap();
+            let stash = guard.as_mut().unwrap();
+            stash.add_entry("saved.txt".to_string(), b"hello world".to_vec()).unwrap();
+        }
+
+        app.lock_stash();
+
+        // Verify the stash was saved (is_dirty cleared) and locked
+        assert_eq!(app.screen, Screen::Login);
+        assert!(!app.is_dirty);
+
+        // Reopen the stash and verify the entry persisted
+        let reopened = Stash::open(b"testpassword123", &path).unwrap();
+        let entries = reopened.list_entries().unwrap();
+        assert!(entries.iter().any(|e| e.path() == "saved.txt"));
     }
 
     #[test]

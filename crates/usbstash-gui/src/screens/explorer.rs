@@ -324,6 +324,29 @@ pub fn show(ui: &mut egui::Ui, app: &mut App) {
                 if app.is_dirty {
                     ui.small("·");
                     ui.small(egui::RichText::new("●").color(egui::Color32::YELLOW));
+                    if ui.small_button("Save").clicked() {
+                        app.record_interaction();
+                        // Scope the mutex guard to avoid borrow conflicts
+                        let save_result = {
+                            let mut guard = match app.stash.lock() {
+                                Ok(g) => g,
+                                Err(poisoned) => poisoned.into_inner(),
+                            };
+                            guard.as_mut().map(|stash| stash.save())
+                        };
+                        match save_result {
+                            Some(Ok(_)) => {
+                                app.is_dirty = false;
+                                app.set_status("Saved");
+                            }
+                            Some(Err(e)) => {
+                                app.set_status(format!("Save failed: {}", e));
+                            }
+                            None => {
+                                app.set_status("No stash is open");
+                            }
+                        }
+                    }
                 }
             });
         });

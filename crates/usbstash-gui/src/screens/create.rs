@@ -30,13 +30,13 @@ pub fn show(ui: &mut egui::Ui, app: &mut App) {
 
     // Password input
     let mut pw_state = password_input::PasswordInputState::default();
-    password_input::show_editable(ui, &mut app.create_password, "Password:", &mut pw_state);
+    password_input::show(ui, &mut app.create_password, "Password:", &mut pw_state);
 
     ui.add_space(4.0);
 
     // Confirm password input
     let mut confirm_state = password_input::PasswordInputState::default();
-    password_input::show_editable(ui, &mut app.create_confirm, "Confirm:", &mut confirm_state);
+    password_input::show(ui, &mut app.create_confirm, "Confirm:", &mut confirm_state);
 
     ui.add_space(8.0);
 

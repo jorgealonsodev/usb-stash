@@ -1,6 +1,6 @@
 //! Masked password input with reveal toggle.
 //!
-//! Returns `true` when the user has edited the value (for auto-lock reset).
+//! Uses egui's built-in password masking when not revealed.
 
 /// State for the password input widget.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -18,7 +18,6 @@ impl PasswordInputState {
 /// Show a password input field with a show/hide toggle button.
 ///
 /// Returns `true` if the value was changed this frame.
-#[allow(dead_code)]
 pub fn show(
     ui: &mut egui::Ui,
     value: &mut String,
@@ -30,66 +29,42 @@ pub fn show(
     ui.horizontal(|ui| {
         ui.label(label);
 
-        if state.revealed {
-            changed |= ui.text_edit_singleline(value).changed();
+        let response = if state.revealed {
+            ui.text_edit_singleline(value)
         } else {
-            let mut masked = "•".repeat(value.chars().count());
-            let response = ui.text_edit_singleline(&mut masked);
-            // Sync real value when user edits the masked field
-            if response.changed() {
-                // When the masked text changes, we can't easily map it back
-                // to the real password, so we only use this for display.
-                // Real editing happens in revealed mode or via direct assignment.
-            }
-            // Handle cursor-based editing: if the field gained focus, clear it
-            if response.gained_focus() {
-                // Don't clear, just let user see masked version
-            }
-        }
+            // Use egui's password mode: displays bullets but edits the real value
+            ui.add(egui::TextEdit::singleline(value).password(true))
+        };
 
-        let reveal_label = if state.revealed { "🙈" } else { "👁" };
-        if ui.small_button(reveal_label).clicked() {
+        changed = response.changed();
+
+        let reveal_label = if state.revealed { "Hide" } else { "Show" };
+        if ui.button(reveal_label).clicked() {
             state.toggle_reveal();
-            changed = true;
         }
     });
 
     changed
 }
 
-/// Show a password input field with a show/hide toggle using text labels.
-///
-/// This version uses a proper approach where the password is always editable
-/// but displayed masked unless revealed.
+/// Show a password input field without a label (compact version).
 ///
 /// Returns `true` if the value was changed this frame.
-pub fn show_editable(
+pub fn show_compact(
     ui: &mut egui::Ui,
     value: &mut String,
-    label: &str,
     state: &mut PasswordInputState,
 ) -> bool {
     let mut changed = false;
 
     ui.horizontal(|ui| {
-        if !label.is_empty() {
-            ui.label(label);
-        }
-
         let response = if state.revealed {
             ui.text_edit_singleline(value)
         } else {
-            // Use a password field that masks input
-            let mut password_value = value.clone();
-            let response = ui.text_edit_singleline(&mut password_value);
-            if response.changed() {
-                *value = password_value;
-                changed = true;
-            }
-            response
+            ui.add(egui::TextEdit::singleline(value).password(true))
         };
 
-        changed |= response.changed();
+        changed = response.changed();
 
         let reveal_label = if state.revealed { "Hide" } else { "Show" };
         if ui.button(reveal_label).clicked() {

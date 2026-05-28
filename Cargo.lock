@@ -4083,7 +4083,7 @@ checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "usbstash-cli"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "assert_cmd",
  "clap",
@@ -4097,7 +4097,7 @@ dependencies = [
 
 [[package]]
 name = "usbstash-core"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "argon2",
  "bincode",
@@ -4114,7 +4114,7 @@ dependencies = [
 
 [[package]]
 name = "usbstash-gui"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "eframe",
  "egui",

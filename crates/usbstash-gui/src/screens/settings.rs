@@ -24,12 +24,12 @@ pub fn show(ui: &mut egui::Ui, app: &mut App) {
     ui.heading("Change Password");
 
     let mut old_pw_state = password_input::PasswordInputState::default();
-    password_input::show_editable(ui, &mut app.old_password, "Current:", &mut old_pw_state);
+    password_input::show(ui, &mut app.old_password, "Current:", &mut old_pw_state);
 
     ui.add_space(4.0);
 
     let mut new_pw_state = password_input::PasswordInputState::default();
-    password_input::show_editable(ui, &mut app.new_password, "New:", &mut new_pw_state);
+    password_input::show(ui, &mut app.new_password, "New:", &mut new_pw_state);
 
     ui.add_space(8.0);
 
