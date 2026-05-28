@@ -50,11 +50,7 @@ pub fn show(
 /// Show a password input field without a label (compact version).
 ///
 /// Returns `true` if the value was changed this frame.
-pub fn show_compact(
-    ui: &mut egui::Ui,
-    value: &mut String,
-    state: &mut PasswordInputState,
-) -> bool {
+pub fn show_compact(ui: &mut egui::Ui, value: &mut String, state: &mut PasswordInputState) -> bool {
     let mut changed = false;
 
     ui.horizontal(|ui| {

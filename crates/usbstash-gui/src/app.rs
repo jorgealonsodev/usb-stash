@@ -226,7 +226,9 @@ mod tests {
         {
             let mut guard = app.stash.lock().unwrap();
             let stash = guard.as_mut().unwrap();
-            stash.add_entry("saved.txt".to_string(), b"hello world".to_vec()).unwrap();
+            stash
+                .add_entry("saved.txt".to_string(), b"hello world".to_vec())
+                .unwrap();
         }
 
         app.lock_stash();

@@ -36,12 +36,7 @@ pub fn show(ui: &mut egui::Ui, app: &mut App) {
 
     // Password input using PasswordInput widget
     let mut pw_state = crate::widgets::password_input::PasswordInputState::default();
-    crate::widgets::password_input::show(
-        ui,
-        &mut app.login_password,
-        "Password:",
-        &mut pw_state,
-    );
+    crate::widgets::password_input::show(ui, &mut app.login_password, "Password:", &mut pw_state);
 
     ui.add_space(16.0);
 
