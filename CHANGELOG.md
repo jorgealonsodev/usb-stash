@@ -27,6 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - File table widget (sortable entry list).
 - Context menu widget (Extract, Rename, Delete — ready for table row integration).
 
+## [0.2.1] — 2026-05-28
+
+### Fixed
+- Password fields now mask input with bullets (egui password mode)
+- Auto-save on lock: changes persist even if you forget to save
+- Save button in Explorer status bar for manual save
+- CI: fixed deprecated egui API and dead code warnings
+
 ## [0.2.0] — 2026-05-26
 
 ### Changed
