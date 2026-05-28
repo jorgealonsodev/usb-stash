@@ -20,7 +20,7 @@ fn main() -> eframe::Result {
         native_options,
         Box::new(|cc| {
             // Set up custom styling
-            let mut style = (*cc.egui_ctx.style()).clone();
+            let mut style = (*cc.egui_ctx.global_style()).clone();
             style.spacing.button_padding = egui::vec2(12.0, 6.0);
             style.spacing.item_spacing = egui::vec2(8.0, 8.0);
             style.visuals.button_frame = true;
@@ -35,7 +35,7 @@ fn main() -> eframe::Result {
             style.visuals.warn_fg_color = egui::Color32::from_rgb(251, 191, 36);
             style.visuals.error_fg_color = egui::Color32::from_rgb(239, 68, 68);
             style.visuals.hyperlink_color = egui::Color32::from_rgb(59, 130, 246);
-            cc.egui_ctx.set_style(style);
+            cc.egui_ctx.set_global_style(style);
 
             Ok(Box::new(App::default()))
         }),
